@@ -1,11 +1,12 @@
 # daily-classic-game-2026-02-26-memory-power-reveals
 
 <div align="center">
-  <p>Deterministic concentration puzzle with a power-reveal twist.</p>
+  <p><strong>Memory (Concentration)</strong> rebuilt as a deterministic 4x4 card puzzle with a <em>power card reveal</em> twist.</p>
 </div>
 
 <div align="center">
-  <p>Media will be updated after capture.</p>
+  <img src="assets/images/hero.png" alt="Memory Power Reveals hero" width="720" />
+  <p>Automated run artifacts captured with deterministic hooks and Playwright.</p>
 </div>
 
 ## Quick Start
@@ -17,19 +18,28 @@ pnpm dev
 
 ## How To Play
 
-Click cards to reveal and match pairs.
+- Press `Start` (or `Enter`).
+- Flip cards to find matching symbol pairs.
+- Use arrow keys plus `Space`/`Enter` for deterministic keyboard play, or click cards directly.
+- Press `P` to pause/resume and `R` to reset.
 
 ## Rules
 
-Match all regular pairs and use the power card strategically.
+- Board size is fixed at 4x4.
+- Seven symbol pairs are matchable.
+- One `★` power card reveals one hidden pair briefly.
+- One filler `?` card appears and never matches.
+- Round ends when all seven symbol pairs are matched.
 
 ## Scoring
 
-Matches gain points and misses reduce points.
+- `+10` for each matched pair.
+- `-2` for each mismatch (never below 0).
+- `+2` when the power card is activated.
 
 ## Twist
 
-One power card reveals a hidden pair for a short time.
+The `power card reveals` twist exposes one hidden pair for a short timed window, letting you route your next move with perfect information if you react before the cards hide.
 
 ## Verification
 
@@ -38,14 +48,26 @@ pnpm test
 pnpm build
 ```
 
+Deterministic automation hooks:
+- `window.advanceTime(ms)`
+- `window.render_game_to_text()`
+
+Playwright solver evidence (`playwright/main-actions/solver-final-state.json`):
+- `mode: "won"`
+- `score: 72`
+- `matchedPairs: 7`
+- `powerTriggered: true`
+
 ## Project Layout
 
-- `src/` game code
-- `assets/` media files
-- `docs/plans/` run plan
+- `src/` core deterministic game logic and UI
+- `test/` Node test coverage for deck/state invariants
+- `playwright/main-actions/` action payloads, captures, and state snapshots
+- `assets/` hero image and named capture clips
+- `docs/plans/` implementation plan for this run
 
 ## GIF Captures
 
-- Clip A (opening)
-- Clip B (power reveal)
-- Clip C (win sequence)
+- Opening Sequence: `assets/gifs/opening-sequence.png`
+- Power Reveal Sequence: `assets/gifs/power-reveal-sequence.png`
+- Finale Sequence: `assets/gifs/finale-sequence.png`
