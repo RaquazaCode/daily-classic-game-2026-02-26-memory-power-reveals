@@ -1,6 +1,113 @@
 :root {
-  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+  --bg: #f4f0de;
+  --fg: #1f2a44;
+  --accent: #bc6c25;
+  --card: #faedcd;
+  --card-up: #d4a373;
+  --power: #ffb703;
+  --matched: #84a98c;
+  font-family: "Avenir Next", "Gill Sans", sans-serif;
 }
+
+* {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
+  min-height: 100vh;
+  color: var(--fg);
+  background: radial-gradient(circle at 20% 20%, #fff7e8, var(--bg));
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+}
+
+.shell {
+  width: min(640px, 100%);
+  background: rgba(255, 255, 255, 0.75);
+  border: 2px solid #e9c46a;
+  border-radius: 18px;
+  padding: 1rem;
+  box-shadow: 0 10px 30px rgba(31, 42, 68, 0.15);
+}
+
+h1 {
+  margin: 0;
+  font-size: 1.8rem;
+}
+
+.sub {
+  margin: 0.35rem 0 0;
+}
+
+.hud {
+  display: flex;
+  gap: 1rem;
+  margin: 1rem 0;
+  flex-wrap: wrap;
+}
+
+.controls {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.controls button {
+  border: 0;
+  border-radius: 999px;
+  padding: 0.45rem 0.8rem;
+  background: var(--accent);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+.card {
+  aspect-ratio: 1 / 1;
+  border: 1px solid #dcae7b;
+  border-radius: 10px;
+  background: var(--card);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: transparent;
+  cursor: pointer;
+  transition: transform 120ms ease, background-color 120ms ease;
+}
+
+.card:hover:enabled {
+  transform: translateY(-2px);
+}
+
+.card.face-up {
+  color: var(--fg);
+  background: var(--card-up);
+}
+
+.card.power.face-up {
+  background: var(--power);
+}
+
+.card.matched {
+  background: var(--matched);
+  color: #102a22;
+}
+
+.message {
+  min-height: 1.6rem;
+  font-weight: 600;
+  margin: 0.9rem 0 0;
+}
+
+.hint {
+  margin: 0.3rem 0 0;
+  opacity: 0.8;
+  font-size: 0.9rem;
 }
