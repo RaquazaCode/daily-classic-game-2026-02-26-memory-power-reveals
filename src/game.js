@@ -63,6 +63,7 @@ export function createGameState(seed = 20260226) {
     paused: false,
     message: 'Press Start or Enter',
     selected: [],
+    cursorIndex: 0,
     inputLocked: false,
     timers: [],
     elapsedMs: 0,
@@ -236,6 +237,7 @@ function serializeState(state) {
     matchedPairs: state.matchedPairs,
     totalPairs: state.totalPairs,
     selected: [...state.selected],
+    cursorIndex: state.cursorIndex,
     visibleCards,
     hiddenCount: state.deck.length - visibleCards.length,
     message: state.message,
@@ -249,6 +251,7 @@ function resetState(baseSeed, restartCount) {
   next.mode = 'playing';
   next.message = 'Find all matching pairs.';
   next.restartCount = restartCount;
+  next.cursorIndex = 0;
   return next;
 }
 
@@ -316,6 +319,9 @@ export function createGame(root) {
       if (card.kind === 'power-reveal') {
         button.classList.add('power');
       }
+      if (i === state.cursorIndex && state.mode === 'playing') {
+        button.classList.add('cursor');
+      }
 
       if (state.mode !== 'playing' || state.paused || state.inputLocked || card.matched) {
         button.disabled = true;
@@ -379,7 +385,12 @@ export function createGame(root) {
 
   window.addEventListener('keydown', (event) => {
     if (event.key === 'Enter' || event.key === ' ') {
-      startGame();
+      if (state.mode === 'start') {
+        startGame();
+      } else if (state.mode === 'playing') {
+        flipCard(state, state.cursorIndex);
+        render();
+      }
       return;
     }
 
@@ -390,6 +401,27 @@ export function createGame(root) {
 
     if (event.key.toLowerCase() === 'r') {
       resetGame();
+      return;
+    }
+
+    if (event.key === 'ArrowLeft' && state.mode === 'playing') {
+      state.cursorIndex = (state.cursorIndex + state.deck.length - 1) % state.deck.length;
+      render();
+      return;
+    }
+    if (event.key === 'ArrowRight' && state.mode === 'playing') {
+      state.cursorIndex = (state.cursorIndex + 1) % state.deck.length;
+      render();
+      return;
+    }
+    if (event.key === 'ArrowUp' && state.mode === 'playing') {
+      state.cursorIndex = (state.cursorIndex + state.deck.length - GRID_SIZE) % state.deck.length;
+      render();
+      return;
+    }
+    if (event.key === 'ArrowDown' && state.mode === 'playing') {
+      state.cursorIndex = (state.cursorIndex + GRID_SIZE) % state.deck.length;
+      render();
       return;
     }
 

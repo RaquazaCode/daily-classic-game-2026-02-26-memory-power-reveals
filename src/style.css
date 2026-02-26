@@ -100,6 +100,11 @@ h1 {
   color: #102a22;
 }
 
+.card.cursor {
+  outline: 3px solid #1d3557;
+  outline-offset: 2px;
+}
+
 .message {
   min-height: 1.6rem;
   font-weight: 600;
