@@ -2,6 +2,34 @@ const GRID_SIZE = 4;
 const CARD_COUNT = GRID_SIZE * GRID_SIZE;
 const PAIR_SYMBOLS = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
 const STEP_MS = 1000 / 60;
+const DEFAULT_MODE_ID = 'classic';
+
+export const MODE_CONFIGS = {
+  classic: {
+    id: 'classic',
+    label: 'Classic',
+    missPenalty: 2,
+    hintCost: 5,
+    hintLimit: 2,
+    sprintDurationMs: null
+  },
+  zen: {
+    id: 'zen',
+    label: 'Zen',
+    missPenalty: 0,
+    hintCost: 0,
+    hintLimit: null,
+    sprintDurationMs: null
+  },
+  sprint: {
+    id: 'sprint',
+    label: 'Sprint',
+    missPenalty: 2,
+    hintCost: 5,
+    hintLimit: 2,
+    sprintDurationMs: 90000
+  }
+};
 
 function mulberry32(seed) {
   return function rand() {
@@ -50,17 +78,26 @@ export function createInitialDeck(seed = 20260226) {
   }));
 }
 
-export function createGameState(seed = 20260226) {
+function resolveMode(modeId) {
+  return MODE_CONFIGS[modeId] || MODE_CONFIGS[DEFAULT_MODE_ID];
+}
+
+export function createGameState(seed = 20260226, modeId = DEFAULT_MODE_ID) {
   const deck = createInitialDeck(seed);
+  const mode = resolveMode(modeId);
   return {
     seed,
     mode: 'start',
+    modeId: mode.id,
+    modeLabel: mode.label,
+    modeRules: mode,
     deck,
     score: 0,
     moves: 0,
     matchedPairs: 0,
     totalPairs: PAIR_SYMBOLS.length,
     paused: false,
+    phase: 'start',
     message: 'Press Start or Enter',
     selected: [],
     cursorIndex: 0,
@@ -139,17 +176,20 @@ function resolvePair(state) {
     state.matchedPairs += 1;
     state.score += 10;
     state.selected = [];
+    state.phase = 'waiting_first';
     state.message = `Match: ${a.symbol}`;
 
     if (state.matchedPairs >= state.totalPairs) {
       state.mode = 'won';
+      state.phase = 'won';
       state.message = 'All pairs matched. Press R to reset.';
     }
     return;
   }
 
-  state.score = Math.max(0, state.score - 2);
+  state.score = Math.max(0, state.score - state.modeRules.missPenalty);
   state.inputLocked = true;
+  state.phase = 'resolving';
   state.message = 'Miss: cards will flip back.';
 
   addTimer(state, 700, () => {
@@ -157,6 +197,7 @@ function resolvePair(state) {
     setCardFace(b, false);
     state.selected = [];
     state.inputLocked = false;
+    state.phase = 'waiting_first';
   });
 }
 
@@ -194,6 +235,7 @@ function flipCard(state, index) {
   }
 
   state.selected.push(index);
+  state.phase = state.selected.length === 1 ? 'waiting_second' : 'resolving';
   if (state.selected.length === 2) {
     resolvePair(state);
   }
@@ -231,6 +273,9 @@ function serializeState(state) {
   return JSON.stringify({
     coordinate_system: 'origin top-left, col grows right, row grows down',
     mode: state.mode,
+    modeId: state.modeId,
+    modeLabel: state.modeLabel,
+    phase: state.phase,
     paused: state.paused,
     score: state.score,
     moves: state.moves,
@@ -247,9 +292,10 @@ function serializeState(state) {
 
 function resetState(baseSeed, restartCount) {
   const nextSeed = baseSeed + restartCount;
-  const next = createGameState(nextSeed);
+  const next = createGameState(nextSeed, DEFAULT_MODE_ID);
   next.mode = 'playing';
   next.message = 'Find all matching pairs.';
+  next.phase = 'waiting_first';
   next.restartCount = restartCount;
   next.cursorIndex = 0;
   return next;
@@ -339,6 +385,7 @@ export function createGame(root) {
   function startGame() {
     if (state.mode === 'start') {
       state.mode = 'playing';
+      state.phase = 'waiting_first';
       state.message = 'Find all matching pairs.';
       render();
     }
@@ -349,6 +396,7 @@ export function createGame(root) {
       return;
     }
     state.paused = !state.paused;
+    state.phase = state.paused ? 'paused' : state.selected.length ? 'waiting_second' : 'waiting_first';
     state.message = state.paused ? 'Paused' : 'Resumed';
     render();
   }
