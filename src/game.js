@@ -68,6 +68,7 @@ const CONTROLS_LEGEND = [
   'Start: Enter or Start button',
   'Move cursor: Arrow keys',
   'Flip selected slot: Space or Enter',
+  'Hint: H or Use Hint button',
   'Pause/Resume: P',
   'Reset round: R'
 ];
@@ -151,6 +152,8 @@ export function createGameState(seed = 20260226, modeId = DEFAULT_MODE_ID) {
       won: false
     },
     howToOpen: false,
+    hintsUsed: 0,
+    hintActive: false,
     selected: [],
     cursorIndex: 0,
     inputLocked: false,
@@ -235,6 +238,59 @@ function consumePowerReveal(state) {
   state.tutorialFlags.powerUsed = true;
   syncTutorialProgress(state);
   state.message = `Power reveal: peeked pair ${pair[0].symbol}.`;
+}
+
+function getHintRemaining(state) {
+  if (state.modeRules.hintLimit == null) {
+    return null;
+  }
+  return Math.max(0, state.modeRules.hintLimit - state.hintsUsed);
+}
+
+function useHint(state) {
+  if (state.mode !== 'playing' || state.paused || state.inputLocked) {
+    return;
+  }
+
+  const remaining = getHintRemaining(state);
+  if (remaining === 0) {
+    state.message = 'No hints remaining in this mode.';
+    return;
+  }
+
+  if (state.modeRules.hintCost > 0 && state.score < state.modeRules.hintCost) {
+    state.message = `Need ${state.modeRules.hintCost} score to use a hint.`;
+    return;
+  }
+
+  const pair = findHiddenPair(state);
+  if (!pair) {
+    state.message = 'No hidden pair available for hint.';
+    return;
+  }
+
+  state.score = Math.max(0, state.score - state.modeRules.hintCost);
+  state.hintsUsed += 1;
+  state.hintActive = true;
+
+  for (const card of pair) {
+    card.faceUp = true;
+    card.tempReveal = true;
+  }
+
+  addTimer(state, 1200, () => {
+    for (const card of pair) {
+      if (!card.matched && card.tempReveal) {
+        card.faceUp = false;
+      }
+      card.tempReveal = false;
+    }
+    state.hintActive = false;
+  });
+
+  const remainingAfter = getHintRemaining(state);
+  const suffix = remainingAfter == null ? 'unlimited in this mode' : `${remainingAfter} left`;
+  state.message = `Hint used: revealed pair ${pair[0].symbol} (${suffix}).`;
 }
 
 function resolvePair(state) {
@@ -363,6 +419,8 @@ function serializeState(state) {
     tutorialVisible: state.tutorialVisible,
     tutorialStep: state.tutorialStep,
     tutorialStepTitle: tutorialStep ? tutorialStep.title : 'Completed',
+    hintsRemaining: getHintRemaining(state),
+    hintActive: state.hintActive,
     controlsLegend: CONTROLS_LEGEND,
     paused: state.paused,
     score: state.score,
@@ -402,11 +460,13 @@ export function createGame(root) {
         <div>Score: <strong id="score">0</strong></div>
         <div>Moves: <strong id="moves">0</strong></div>
         <div>Pairs: <strong id="pairs">0</strong>/<span id="pairs-total">7</span></div>
+        <div>Hints: <strong id="hints">2</strong></div>
       </section>
       <section class="controls">
         <button id="start-btn" type="button">Start</button>
         <button id="pause-btn" type="button">Pause (P)</button>
         <button id="reset-btn" type="button">Reset (R)</button>
+        <button id="hint-btn" type="button">Use Hint</button>
         <button id="howto-btn" type="button">How To Play</button>
       </section>
       <section class="card-legend" aria-label="card legend">
@@ -427,6 +487,7 @@ export function createGame(root) {
   const movesNode = root.querySelector('#moves');
   const pairsNode = root.querySelector('#pairs');
   const pairsTotalNode = root.querySelector('#pairs-total');
+  const hintsNode = root.querySelector('#hints');
   const messageNode = root.querySelector('#message');
   const tutorialNode = root.querySelector('#tutorial');
   const boardNode = root.querySelector('#board');
@@ -434,6 +495,7 @@ export function createGame(root) {
   const startBtn = root.querySelector('#start-btn');
   const pauseBtn = root.querySelector('#pause-btn');
   const resetBtn = root.querySelector('#reset-btn');
+  const hintBtn = root.querySelector('#hint-btn');
   const howToBtn = root.querySelector('#howto-btn');
 
   function render() {
@@ -441,6 +503,8 @@ export function createGame(root) {
     movesNode.textContent = String(state.moves);
     pairsNode.textContent = String(state.matchedPairs);
     pairsTotalNode.textContent = String(state.totalPairs);
+    const hintRemaining = getHintRemaining(state);
+    hintsNode.textContent = hintRemaining == null ? '∞' : String(hintRemaining);
     messageNode.textContent = state.message;
     pauseBtn.textContent = state.paused ? 'Resume (P)' : 'Pause (P)';
 
@@ -581,6 +645,11 @@ export function createGame(root) {
     resetGame();
   });
 
+  hintBtn.addEventListener('click', () => {
+    useHint(state);
+    render();
+  });
+
   howToBtn.addEventListener('click', () => {
     toggleHowTo();
   });
@@ -603,6 +672,11 @@ export function createGame(root) {
 
     if (event.key.toLowerCase() === 'r') {
       resetGame();
+      return;
+    }
+    if (event.key.toLowerCase() === 'h') {
+      useHint(state);
+      render();
       return;
     }
 
