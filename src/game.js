@@ -275,6 +275,7 @@ function useHint(state) {
   state.score = Math.max(0, state.score - state.modeRules.hintCost);
   state.hintsUsed += 1;
   state.hintActive = true;
+  state.phase = 'resolving';
 
   for (const card of pair) {
     card.faceUp = true;
@@ -289,6 +290,7 @@ function useHint(state) {
       card.tempReveal = false;
     }
     state.hintActive = false;
+    state.phase = state.selected.length ? 'waiting_second' : 'waiting_first';
   });
 
   const remainingAfter = getHintRemaining(state);
@@ -304,6 +306,31 @@ function getModeStartMessage(state) {
     return 'Sprint mode: beat the 90s timer with streak scoring.';
   }
   return 'Find all matching pairs.';
+}
+
+function getNextAction(state) {
+  if (state.mode === 'start') {
+    return 'Next: press Start to begin.';
+  }
+  if (state.phase === 'paused') {
+    return 'Next: press P or Pause to resume.';
+  }
+  if (state.phase === 'waiting_first') {
+    return 'Next: pick your first card (click or arrows + Space/Enter).';
+  }
+  if (state.phase === 'waiting_second') {
+    return 'Next: pick a second card to attempt a match.';
+  }
+  if (state.phase === 'resolving') {
+    return 'Next: wait for reveal/resolve, then continue matching.';
+  }
+  if (state.phase === 'won') {
+    return 'Next: press R to replay, or choose another mode.';
+  }
+  if (state.phase === 'time_up') {
+    return 'Next: press R to retry Sprint or switch modes.';
+  }
+  return 'Next: keep matching pairs.';
 }
 
 function resolvePair(state) {
@@ -376,21 +403,25 @@ function flipCard(state, index) {
 
   if (card.kind === 'power-reveal') {
     state.score += 2;
+    state.phase = 'resolving';
     consumePowerReveal(state);
     addTimer(state, 550, () => {
       if (!card.matched) {
         card.faceUp = false;
       }
+      state.phase = 'waiting_first';
     });
     return;
   }
 
   if (card.kind !== 'pair') {
+    state.phase = 'resolving';
     state.message = 'Wildcard card: no score effect.';
     addTimer(state, 500, () => {
       if (!card.matched) {
         card.faceUp = false;
       }
+      state.phase = 'waiting_first';
     });
     return;
   }
@@ -524,7 +555,8 @@ export function createGame(root) {
       <section id="tutorial" class="tutorial" aria-live="polite"></section>
       <section id="board" class="board" aria-label="game board"></section>
       <p id="message" class="message"></p>
-      <p class="hint">Keys: P pause, R reset, 1-16 flips slots.</p>
+      <p id="next-action" class="next-action"></p>
+      <p class="hint">Keys: Arrows move, Space/Enter flip, H hint, P pause, R reset.</p>
     </main>
   `;
 
@@ -536,6 +568,7 @@ export function createGame(root) {
   const timerNode = root.querySelector('#timer');
   const streakNode = root.querySelector('#streak');
   const messageNode = root.querySelector('#message');
+  const nextActionNode = root.querySelector('#next-action');
   const tutorialNode = root.querySelector('#tutorial');
   const boardNode = root.querySelector('#board');
   const howToNode = root.querySelector('#howto');
@@ -566,6 +599,7 @@ export function createGame(root) {
     timerNode.textContent = formatTimer(state.sprintTimeRemainingMs);
     streakNode.textContent = String(state.streak);
     messageNode.textContent = state.message;
+    nextActionNode.textContent = getNextAction(state);
     pauseBtn.textContent = state.paused ? 'Resume (P)' : 'Pause (P)';
 
     const tutorialStep = getTutorialStep(state);

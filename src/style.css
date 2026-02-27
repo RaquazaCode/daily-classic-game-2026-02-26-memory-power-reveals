@@ -233,6 +233,14 @@ h1 {
   margin: 0.9rem 0 0;
 }
 
+.next-action {
+  min-height: 1.4rem;
+  margin: 0.35rem 0 0;
+  color: #184e77;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
 .hint {
   margin: 0.3rem 0 0;
   opacity: 0.8;
