@@ -1,12 +1,12 @@
 # daily-classic-game-2026-02-26-memory-power-reveals
 
 <div align="center">
-  <p><strong>Memory (Concentration)</strong> rebuilt as a deterministic 4x4 card puzzle with a <em>power card reveal</em> twist.</p>
+  <p><strong>Memory Power Reveals</strong> is a deterministic 4x4 concentration game with guided onboarding, three play modes, and transparent rules.</p>
 </div>
 
 <div align="center">
   <img src="assets/images/hero.png" alt="Memory Power Reveals hero" width="720" />
-  <p>Automated run artifacts captured with deterministic hooks and Playwright.</p>
+  <p>Classic memory gameplay + <code>★</code> reveal twist + deterministic automation hooks.</p>
 </div>
 
 ## Quick Start
@@ -16,30 +16,82 @@ pnpm install
 pnpm dev
 ```
 
-## How To Play
+## Detailed Step-By-Step Play
 
-- Press `Start` (or `Enter`).
-- Flip cards to find matching symbol pairs.
-- Use arrow keys plus `Space`/`Enter` for deterministic keyboard play, or click cards directly.
-- Press `P` to pause/resume and `R` to reset.
+1. Open the game and choose a mode (`Classic`, `Zen`, or `Sprint`).
+2. Press `Start` (or hit `Enter`) to begin.
+3. Follow the tutorial overlay steps:
+   - Start round
+   - Flip first card
+   - Match one pair
+   - Trigger the `★` card once
+   - Clear all pairs
+4. On each turn, choose your first card (click or arrows + `Space/Enter`).
+5. Choose a second card:
+   - If symbols match, the pair locks in place.
+   - If they do not match, both flip back after a short resolve delay.
+6. Use `Use Hint` (or `H`) when needed:
+   - `Classic`/`Sprint`: max 2 hints, each costs 5 score.
+   - `Zen`: unlimited hints, no score cost.
+7. Continue until you win or run out of time in Sprint.
+8. Press `R` to reset the current mode, or switch mode from the selector.
+
+## Modes
+
+- **Classic**: standard scoring and penalties.
+- **Zen**: no miss penalty, unlimited hints, no timer pressure.
+- **Sprint**: 90-second round timer with streak bonus scoring.
 
 ## Rules
 
-- Board size is fixed at 4x4.
-- Seven symbol pairs are matchable.
-- One `★` power card reveals one hidden pair briefly.
-- One filler `?` card appears and never matches.
-- Round ends when all seven symbol pairs are matched.
+- Board is fixed at 4x4 cards.
+- There are 7 matchable symbol pairs.
+- One `★` power card reveals one hidden pair for a short time.
+- One `?` wildcard card flips but never matches.
+- Win by matching all 7 symbol pairs.
+- Sprint ends when timer reaches `00:00`.
 
 ## Scoring
 
-- `+10` for each matched pair.
-- `-2` for each mismatch (never below 0).
-- `+2` when the power card is activated.
+- Base match: `+10`
+- Sprint streak bonus: `+4` extra per consecutive match after the first
+- Miss penalty:
+  - Classic/Sprint: `-2`
+  - Zen: `0`
+- Hint cost:
+  - Classic/Sprint: `-5`
+  - Zen: `0`
+- Power card trigger bonus: `+2`
 
-## Twist
+## Controls
 
-The `power card reveals` twist exposes one hidden pair for a short timed window, letting you route your next move with perfect information if you react before the cards hide.
+- `Enter` or Start button: Start round / flip selected slot
+- Arrow keys: Move board cursor
+- `Space`: Flip selected slot
+- `H`: Use hint
+- `P`: Pause/resume
+- `R`: Reset current mode
+
+## Strategy Tips
+
+- In Sprint, prioritize guaranteed matches over exploratory flips to preserve streak.
+- Use the `★` reveal after you have partial memory, so the preview is actionable.
+- In Classic, save hints for late-round uncertainty when hidden-card entropy is highest.
+- In Zen, use hints to learn board patterns quickly without score pressure.
+
+## FAQ
+
+### Why do some cards not count as matches?
+Only pair cards are matchable. `★` and `?` are special cards.
+
+### Why can I not flip cards for a moment?
+The game is in a resolve phase (mismatch, hint reveal, or power reveal timer).
+
+### Why did Sprint end even though cards remain?
+Sprint mode is timer-based; it ends when 90 seconds expire.
+
+### Is this deterministic for automated testing?
+Yes. Deck order and timing are deterministic via the exposed hooks.
 
 ## Verification
 
@@ -48,26 +100,25 @@ pnpm test
 pnpm build
 ```
 
-Deterministic automation hooks:
+Deterministic browser hooks:
+
 - `window.advanceTime(ms)`
 - `window.render_game_to_text()`
 
-Playwright solver evidence (`playwright/main-actions/solver-final-state.json`):
-- `mode: "won"`
-- `score: 72`
-- `matchedPairs: 7`
-- `powerTriggered: true`
+Internal helper used by local solver automation (not public API):
+
+- `window.__game.getState()`
 
 ## Project Layout
 
-- `src/` core deterministic game logic and UI
-- `test/` Node test coverage for deck/state invariants
-- `playwright/main-actions/` action payloads, captures, and state snapshots
-- `assets/` hero image and named capture clips
-- `docs/plans/` implementation plan for this run
+- `src/` game logic + UI
+- `test/` deterministic behavior tests
+- `playwright/main-actions/` scripted action payloads + solver outputs
+- `assets/` hero and capture media
+- `docs/plans/` implementation notes and audit
 
 ## GIF Captures
 
 - Opening Sequence: `assets/gifs/opening-sequence.png`
-- Power Reveal Sequence: `assets/gifs/power-reveal-sequence.png`
+- Midgame Sequence: `assets/gifs/power-reveal-sequence.png`
 - Finale Sequence: `assets/gifs/finale-sequence.png`
