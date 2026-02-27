@@ -1,30 +1,79 @@
-# Design: Memory Power Reveals
+# Design: Memory Clarity Overhaul
 
 ## Goal
-Build a deterministic Memory (Concentration) MVP with a single twist (`power card reveals`) that remains automation-safe for unattended nightly runs.
+Make the game understandable for first-time players in under 30 seconds while preserving deterministic automation hooks and replayable depth.
 
-## Core Loop
-1. Start round on a 4x4 board.
-2. Flip two cards to attempt a symbol match.
-3. Resolve match/miss with deterministic timers.
-4. Repeat until all 7 symbol pairs are matched.
+## UX Clarity Pillars
+1. Guided onboarding with trigger-based tutorial steps.
+2. Persistent in-game help drawer with controls, rules, and card legend.
+3. Explicit mode selection with readable, mode-specific behavior.
+4. Phase-aware next-action guidance so players always know what to do next.
 
-## Twist Implementation
-- A single `★` power card exists in the deck.
-- Flipping `★` reveals one currently hidden pair for ~850ms.
-- Player receives `+2` bonus score for activation.
+## Mode Model
 
-## Determinism Strategy
-- Deck order uses a fixed seeded shuffle.
-- Timer progression is driven by explicit `advanceTime` stepping.
-- Automation can assert gameplay state via `render_game_to_text` without visual ambiguity.
+- **Classic**
+  - Miss penalty: `-2`
+  - Hint limit: `2`
+  - Hint cost: `5`
+  - Timer: none
 
-## Input Surface
-- Mouse: click card buttons.
-- Keyboard: arrows move cursor, `Space`/`Enter` flips selected card.
-- Global controls: `P` pause/resume, `R` reset.
+- **Zen**
+  - Miss penalty: `0`
+  - Hint limit: unlimited
+  - Hint cost: `0`
+  - Timer: none
 
-## Win/Loss and Scoring
-- Win when `matchedPairs === 7`.
-- No loss state; play continues until solved.
-- Scoring: `+10` match, `-2` miss (floor 0), `+2` power card use.
+- **Sprint**
+  - Miss penalty: `-2`
+  - Hint limit: `2`
+  - Hint cost: `5`
+  - Timer: `90s`
+  - Streak scoring: `+4` per consecutive match after first
+
+## Tutorial State Machine
+
+Tutorial progression is derived from explicit gameplay triggers:
+- `started`
+- `firstFlip`
+- `firstMatch`
+- `powerUsed`
+- `won`
+
+The overlay advances automatically when each trigger is satisfied.
+
+## Phase Model
+
+Primary phase values:
+- `start`
+- `waiting_first`
+- `waiting_second`
+- `resolving`
+- `paused`
+- `won`
+- `time_up`
+
+The UI computes next-action guidance from this phase model.
+
+## Card Semantics
+
+- `pair`: matchable cards worth points.
+- `power-reveal` (`★`): temporary reveal of one hidden pair.
+- `filler` (`?`): flips but cannot match.
+
+## Determinism and Automation Hooks
+
+- Deterministic deck shuffle from fixed seed.
+- Deterministic timer stepping via `window.advanceTime(ms)`.
+- Readable full game snapshot via `window.render_game_to_text()`.
+- Internal helper for solver automation: `window.__game.getState()`.
+
+## Extended Output Contract
+
+`render_game_to_text()` includes:
+- mode data: `modeId`, `modeLabel`
+- interaction state: `phase`
+- tutorial state: `tutorialVisible`, `tutorialStep`, `tutorialStepTitle`
+- hint state: `hintsRemaining`, `hintActive`
+- sprint state: `sprintTimeRemainingMs`
+- momentum state: `streak`, `maxStreak`
+- controls metadata: `controlsLegend`

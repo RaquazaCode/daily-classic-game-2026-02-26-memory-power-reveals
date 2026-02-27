@@ -41,6 +41,21 @@ h1 {
   margin: 0.35rem 0 0;
 }
 
+.mode-select {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-top: 0.7rem;
+  font-size: 0.9rem;
+}
+
+.mode-select select {
+  border: 1px solid #c2976c;
+  border-radius: 8px;
+  padding: 0.2rem 0.4rem;
+  background: #fffdf7;
+}
+
 .hud {
   display: flex;
   gap: 1rem;
@@ -64,6 +79,87 @@ h1 {
   cursor: pointer;
 }
 
+.howto {
+  border: 1px solid #d5b08c;
+  background: #fff;
+  border-radius: 12px;
+  padding: 0.75rem 0.8rem;
+  margin-bottom: 0.85rem;
+}
+
+.howto h2,
+.howto h3 {
+  margin: 0;
+}
+
+.howto h3 {
+  margin-top: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.howto ol,
+.howto ul {
+  margin: 0.45rem 0 0;
+  padding-left: 1.15rem;
+}
+
+.howto li {
+  margin: 0.2rem 0;
+  font-size: 0.9rem;
+}
+
+.card-legend {
+  display: flex;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+  align-items: center;
+  margin: 0 0 0.8rem;
+  font-size: 0.85rem;
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.legend-chip {
+  display: inline-grid;
+  place-items: center;
+  width: 1.35rem;
+  height: 1.35rem;
+  border-radius: 999px;
+  border: 1px solid #a67c52;
+  background: #f6e7cf;
+  font-weight: 700;
+}
+
+.legend-chip.power {
+  background: #ffd573;
+}
+
+.legend-chip.filler {
+  background: #e6e6e6;
+}
+
+.tutorial {
+  border: 2px dashed #e9c46a;
+  border-radius: 12px;
+  padding: 0.7rem 0.8rem;
+  margin-bottom: 0.9rem;
+  background: #fff8ea;
+}
+
+.tutorial h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.tutorial p {
+  margin: 0.35rem 0 0;
+  font-size: 0.92rem;
+}
+
 .board {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -71,6 +167,9 @@ h1 {
 }
 
 .card {
+  position: relative;
+  display: grid;
+  place-items: center;
   aspect-ratio: 1 / 1;
   border: 1px solid #dcae7b;
   border-radius: 10px;
@@ -80,6 +179,25 @@ h1 {
   color: transparent;
   cursor: pointer;
   transition: transform 120ms ease, background-color 120ms ease;
+}
+
+.card-face {
+  pointer-events: none;
+}
+
+.slot-chip {
+  position: absolute;
+  right: 0.35rem;
+  top: 0.35rem;
+  min-width: 1.2rem;
+  height: 1.2rem;
+  padding: 0 0.2rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.88);
+  color: #2a2a2a;
+  font-size: 0.68rem;
+  display: inline-grid;
+  place-items: center;
 }
 
 .card:hover:enabled {
@@ -93,6 +211,10 @@ h1 {
 
 .card.power.face-up {
   background: var(--power);
+}
+
+.card.filler.face-up {
+  background: #d6d6d6;
 }
 
 .card.matched {
@@ -109,6 +231,14 @@ h1 {
   min-height: 1.6rem;
   font-weight: 600;
   margin: 0.9rem 0 0;
+}
+
+.next-action {
+  min-height: 1.4rem;
+  margin: 0.35rem 0 0;
+  color: #184e77;
+  font-weight: 600;
+  font-size: 0.9rem;
 }
 
 .hint {
