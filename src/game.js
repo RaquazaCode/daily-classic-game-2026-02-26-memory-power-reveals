@@ -154,6 +154,9 @@ export function createGameState(seed = 20260226, modeId = DEFAULT_MODE_ID) {
     howToOpen: false,
     hintsUsed: 0,
     hintActive: false,
+    sprintTimeRemainingMs: mode.sprintDurationMs,
+    streak: 0,
+    maxStreak: 0,
     selected: [],
     cursorIndex: 0,
     inputLocked: false,
@@ -307,12 +310,15 @@ function resolvePair(state) {
     a.matched = true;
     b.matched = true;
     state.matchedPairs += 1;
-    state.score += 10;
+    state.streak += 1;
+    state.maxStreak = Math.max(state.maxStreak, state.streak);
+    const matchPoints = state.modeId === 'sprint' ? 10 + (state.streak - 1) * 4 : 10;
+    state.score += matchPoints;
     state.tutorialFlags.firstMatch = true;
     syncTutorialProgress(state);
     state.selected = [];
     state.phase = 'waiting_first';
-    state.message = `Match: ${a.symbol}`;
+    state.message = state.modeId === 'sprint' ? `Match: ${a.symbol} (streak x${state.streak})` : `Match: ${a.symbol}`;
 
     if (state.matchedPairs >= state.totalPairs) {
       state.mode = 'won';
@@ -325,6 +331,7 @@ function resolvePair(state) {
   }
 
   state.score = Math.max(0, state.score - state.modeRules.missPenalty);
+  state.streak = 0;
   state.inputLocked = true;
   state.phase = 'resolving';
   state.message = 'Miss: cards will flip back.';
@@ -385,6 +392,17 @@ function advanceTimers(state, deltaMs) {
     return;
   }
 
+  if (state.mode === 'playing' && state.sprintTimeRemainingMs != null) {
+    state.sprintTimeRemainingMs = Math.max(0, state.sprintTimeRemainingMs - deltaMs);
+    if (state.sprintTimeRemainingMs === 0) {
+      state.mode = 'time_up';
+      state.phase = 'time_up';
+      state.inputLocked = true;
+      state.message = `Time up. Final score: ${state.score}`;
+      return;
+    }
+  }
+
   for (const timer of state.timers) {
     timer.remaining -= deltaMs;
   }
@@ -421,6 +439,9 @@ function serializeState(state) {
     tutorialStepTitle: tutorialStep ? tutorialStep.title : 'Completed',
     hintsRemaining: getHintRemaining(state),
     hintActive: state.hintActive,
+    sprintTimeRemainingMs: state.sprintTimeRemainingMs,
+    streak: state.streak,
+    maxStreak: state.maxStreak,
     controlsLegend: CONTROLS_LEGEND,
     paused: state.paused,
     score: state.score,
@@ -436,9 +457,9 @@ function serializeState(state) {
   });
 }
 
-function resetState(baseSeed, restartCount) {
+function resetState(baseSeed, restartCount, modeId = DEFAULT_MODE_ID) {
   const nextSeed = baseSeed + restartCount;
-  const next = createGameState(nextSeed, DEFAULT_MODE_ID);
+  const next = createGameState(nextSeed, modeId);
   next.mode = 'playing';
   next.message = 'Find all matching pairs.';
   next.phase = 'waiting_first';
@@ -455,12 +476,21 @@ export function createGame(root) {
       <header>
         <h1>Memory Power Reveals</h1>
         <p class="sub">Match pairs, then use ★ to peek one hidden pair.</p>
+        <label class="mode-select" for="mode-select">Mode
+          <select id="mode-select">
+            <option value="classic">Classic</option>
+            <option value="zen">Zen</option>
+            <option value="sprint">Sprint (90s)</option>
+          </select>
+        </label>
       </header>
       <section class="hud">
         <div>Score: <strong id="score">0</strong></div>
         <div>Moves: <strong id="moves">0</strong></div>
         <div>Pairs: <strong id="pairs">0</strong>/<span id="pairs-total">7</span></div>
         <div>Hints: <strong id="hints">2</strong></div>
+        <div>Timer: <strong id="timer">--</strong></div>
+        <div>Streak: <strong id="streak">0</strong></div>
       </section>
       <section class="controls">
         <button id="start-btn" type="button">Start</button>
@@ -488,15 +518,28 @@ export function createGame(root) {
   const pairsNode = root.querySelector('#pairs');
   const pairsTotalNode = root.querySelector('#pairs-total');
   const hintsNode = root.querySelector('#hints');
+  const timerNode = root.querySelector('#timer');
+  const streakNode = root.querySelector('#streak');
   const messageNode = root.querySelector('#message');
   const tutorialNode = root.querySelector('#tutorial');
   const boardNode = root.querySelector('#board');
   const howToNode = root.querySelector('#howto');
+  const modeSelect = root.querySelector('#mode-select');
   const startBtn = root.querySelector('#start-btn');
   const pauseBtn = root.querySelector('#pause-btn');
   const resetBtn = root.querySelector('#reset-btn');
   const hintBtn = root.querySelector('#hint-btn');
   const howToBtn = root.querySelector('#howto-btn');
+
+  function formatTimer(ms) {
+    if (ms == null) {
+      return '--';
+    }
+    const seconds = Math.ceil(ms / 1000);
+    const mm = String(Math.floor(seconds / 60)).padStart(2, '0');
+    const ss = String(seconds % 60).padStart(2, '0');
+    return `${mm}:${ss}`;
+  }
 
   function render() {
     scoreNode.textContent = String(state.score);
@@ -505,6 +548,8 @@ export function createGame(root) {
     pairsTotalNode.textContent = String(state.totalPairs);
     const hintRemaining = getHintRemaining(state);
     hintsNode.textContent = hintRemaining == null ? '∞' : String(hintRemaining);
+    timerNode.textContent = formatTimer(state.sprintTimeRemainingMs);
+    streakNode.textContent = String(state.streak);
     messageNode.textContent = state.message;
     pauseBtn.textContent = state.paused ? 'Resume (P)' : 'Pause (P)';
 
@@ -612,7 +657,18 @@ export function createGame(root) {
 
   function resetGame() {
     const restartCount = state.restartCount + 1;
-    state = resetState(20260226, restartCount);
+    state = resetState(20260226, restartCount, state.modeId);
+    modeSelect.value = state.modeId;
+    render();
+  }
+
+  function setMode(modeId) {
+    const restartCount = state.restartCount + 1;
+    state = resetState(20260226, restartCount, modeId);
+    state.mode = 'start';
+    state.phase = 'start';
+    state.message = `Mode set to ${state.modeLabel}. Press Start.`;
+    modeSelect.value = state.modeId;
     render();
   }
 
@@ -652,6 +708,10 @@ export function createGame(root) {
 
   howToBtn.addEventListener('click', () => {
     toggleHowTo();
+  });
+
+  modeSelect.addEventListener('change', (event) => {
+    setMode(event.target.value);
   });
 
   window.addEventListener('keydown', (event) => {
@@ -717,6 +777,7 @@ export function createGame(root) {
 
   window.render_game_to_text = () => serializeState(state);
 
+  modeSelect.value = state.modeId;
   state.message = 'Press Start or Enter';
   render();
 

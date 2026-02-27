@@ -41,6 +41,21 @@ h1 {
   margin: 0.35rem 0 0;
 }
 
+.mode-select {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-top: 0.7rem;
+  font-size: 0.9rem;
+}
+
+.mode-select select {
+  border: 1px solid #c2976c;
+  border-radius: 8px;
+  padding: 0.2rem 0.4rem;
+  background: #fffdf7;
+}
+
 .hud {
   display: flex;
   gap: 1rem;
