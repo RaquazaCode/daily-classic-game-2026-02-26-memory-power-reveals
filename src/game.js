@@ -64,6 +64,14 @@ const TUTORIAL_STEPS = [
   }
 ];
 
+const CONTROLS_LEGEND = [
+  'Start: Enter or Start button',
+  'Move cursor: Arrow keys',
+  'Flip selected slot: Space or Enter',
+  'Pause/Resume: P',
+  'Reset round: R'
+];
+
 function mulberry32(seed) {
   return function rand() {
     let t = (seed += 0x6d2b79f5);
@@ -142,6 +150,7 @@ export function createGameState(seed = 20260226, modeId = DEFAULT_MODE_ID) {
       powerUsed: false,
       won: false
     },
+    howToOpen: false,
     selected: [],
     cursorIndex: 0,
     inputLocked: false,
@@ -354,6 +363,7 @@ function serializeState(state) {
     tutorialVisible: state.tutorialVisible,
     tutorialStep: state.tutorialStep,
     tutorialStepTitle: tutorialStep ? tutorialStep.title : 'Completed',
+    controlsLegend: CONTROLS_LEGEND,
     paused: state.paused,
     score: state.score,
     moves: state.moves,
@@ -397,7 +407,9 @@ export function createGame(root) {
         <button id="start-btn" type="button">Start</button>
         <button id="pause-btn" type="button">Pause (P)</button>
         <button id="reset-btn" type="button">Reset (R)</button>
+        <button id="howto-btn" type="button">How To Play</button>
       </section>
+      <aside id="howto" class="howto" hidden aria-live="polite"></aside>
       <section id="tutorial" class="tutorial" aria-live="polite"></section>
       <section id="board" class="board" aria-label="game board"></section>
       <p id="message" class="message"></p>
@@ -412,9 +424,11 @@ export function createGame(root) {
   const messageNode = root.querySelector('#message');
   const tutorialNode = root.querySelector('#tutorial');
   const boardNode = root.querySelector('#board');
+  const howToNode = root.querySelector('#howto');
   const startBtn = root.querySelector('#start-btn');
   const pauseBtn = root.querySelector('#pause-btn');
   const resetBtn = root.querySelector('#reset-btn');
+  const howToBtn = root.querySelector('#howto-btn');
 
   function render() {
     scoreNode.textContent = String(state.score);
@@ -434,6 +448,25 @@ export function createGame(root) {
     } else {
       tutorialNode.hidden = true;
       tutorialNode.innerHTML = '';
+    }
+
+    if (state.howToOpen) {
+      howToNode.hidden = false;
+      howToNode.innerHTML = `
+        <h2>How To Play</h2>
+        <ol>
+          <li>Start the round and pick one card.</li>
+          <li>Pick a second card to attempt a match.</li>
+          <li>Matched symbols lock; misses flip back.</li>
+          <li>Use ★ strategically to preview one hidden pair.</li>
+          <li>Match all pairs to win the board.</li>
+        </ol>
+        <h3>Controls</h3>
+        <ul>${CONTROLS_LEGEND.map((item) => `<li>${item}</li>`).join('')}</ul>
+      `;
+    } else {
+      howToNode.hidden = true;
+      howToNode.innerHTML = '';
     }
 
     boardNode.innerHTML = '';
@@ -501,6 +534,11 @@ export function createGame(root) {
     render();
   }
 
+  function toggleHowTo() {
+    state.howToOpen = !state.howToOpen;
+    render();
+  }
+
   function advanceTime(ms) {
     const clamped = Math.max(0, Number(ms) || 0);
     let remaining = clamped;
@@ -523,6 +561,10 @@ export function createGame(root) {
 
   resetBtn.addEventListener('click', () => {
     resetGame();
+  });
+
+  howToBtn.addEventListener('click', () => {
+    toggleHowTo();
   });
 
   window.addEventListener('keydown', (event) => {

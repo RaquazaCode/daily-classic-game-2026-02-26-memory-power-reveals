@@ -64,6 +64,35 @@ h1 {
   cursor: pointer;
 }
 
+.howto {
+  border: 1px solid #d5b08c;
+  background: #fff;
+  border-radius: 12px;
+  padding: 0.75rem 0.8rem;
+  margin-bottom: 0.85rem;
+}
+
+.howto h2,
+.howto h3 {
+  margin: 0;
+}
+
+.howto h3 {
+  margin-top: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.howto ol,
+.howto ul {
+  margin: 0.45rem 0 0;
+  padding-left: 1.15rem;
+}
+
+.howto li {
+  margin: 0.2rem 0;
+  font-size: 0.9rem;
+}
+
 .tutorial {
   border: 2px dashed #e9c46a;
   border-radius: 12px;
