@@ -514,6 +514,56 @@ function resetState(baseSeed, restartCount, modeId = DEFAULT_MODE_ID) {
   return next;
 }
 
+export function createTestHarness(seed = 20260226, modeId = DEFAULT_MODE_ID) {
+  const baseSeed = seed;
+  let state = createGameState(seed, modeId);
+
+  function start() {
+    if (state.mode === 'start') {
+      state.mode = 'playing';
+      state.phase = 'waiting_first';
+      state.tutorialFlags.started = true;
+      syncTutorialProgress(state);
+      state.message = getModeStartMessage(state);
+    }
+  }
+
+  function advance(ms) {
+    const clamped = Math.max(0, Number(ms) || 0);
+    let remaining = clamped;
+    while (remaining > 0) {
+      const delta = Math.min(remaining, STEP_MS);
+      advanceTimers(state, delta);
+      state.elapsedMs += delta;
+      remaining -= delta;
+    }
+  }
+
+  function reset() {
+    const restartCount = state.restartCount + 1;
+    state = resetState(baseSeed, restartCount, state.modeId);
+  }
+
+  function setMode(nextModeId) {
+    const restartCount = state.restartCount + 1;
+    state = resetState(baseSeed, restartCount, nextModeId);
+    state.mode = 'start';
+    state.phase = 'start';
+    state.message = `Mode set to ${state.modeLabel}. ${getModeStartMessage(state)}`;
+  }
+
+  return {
+    getState: () => state,
+    start,
+    flip: (index) => flipCard(state, index),
+    useHint: () => useHint(state),
+    advance,
+    reset,
+    setMode,
+    serialize: () => serializeState(state)
+  };
+}
+
 export function createGame(root) {
   let state = createGameState();
 
