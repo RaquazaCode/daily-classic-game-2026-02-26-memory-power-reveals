@@ -409,6 +409,12 @@ export function createGame(root) {
         <button id="reset-btn" type="button">Reset (R)</button>
         <button id="howto-btn" type="button">How To Play</button>
       </section>
+      <section class="card-legend" aria-label="card legend">
+        <span class="legend-item"><strong>Card Types:</strong></span>
+        <span class="legend-item"><span class="legend-chip pair">A</span> Pair</span>
+        <span class="legend-item"><span class="legend-chip power">★</span> Power Reveal</span>
+        <span class="legend-item"><span class="legend-chip filler">?</span> Wildcard</span>
+      </section>
       <aside id="howto" class="howto" hidden aria-live="polite"></aside>
       <section id="tutorial" class="tutorial" aria-live="polite"></section>
       <section id="board" class="board" aria-label="game board"></section>
@@ -463,6 +469,12 @@ export function createGame(root) {
         </ol>
         <h3>Controls</h3>
         <ul>${CONTROLS_LEGEND.map((item) => `<li>${item}</li>`).join('')}</ul>
+        <h3>Card Types</h3>
+        <ul>
+          <li><strong>Pair cards</strong>: match identical symbols for points.</li>
+          <li><strong>★ Power Reveal</strong>: temporarily reveals one hidden pair.</li>
+          <li><strong>? Wildcard</strong>: flips but does not form a pair.</li>
+        </ul>
       `;
     } else {
       howToNode.hidden = true;
@@ -482,17 +494,23 @@ export function createGame(root) {
       }
       if (card.faceUp || card.matched) {
         button.classList.add('face-up');
-        button.textContent = card.symbol;
       } else {
-        button.textContent = '•';
+        button.classList.add('face-down');
       }
 
       if (card.kind === 'power-reveal') {
         button.classList.add('power');
       }
+      if (card.kind === 'filler') {
+        button.classList.add('filler');
+      }
       if (i === state.cursorIndex && state.mode === 'playing') {
         button.classList.add('cursor');
       }
+
+      const face = card.faceUp || card.matched ? card.symbol : '•';
+      button.innerHTML = `<span class="card-face">${face}</span><span class="slot-chip">${i + 1}</span>`;
+      button.setAttribute('aria-label', `Slot ${i + 1} ${card.kind}`);
 
       if (state.mode !== 'playing' || state.paused || state.inputLocked || card.matched) {
         button.disabled = true;

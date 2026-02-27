@@ -93,6 +93,40 @@ h1 {
   font-size: 0.9rem;
 }
 
+.card-legend {
+  display: flex;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+  align-items: center;
+  margin: 0 0 0.8rem;
+  font-size: 0.85rem;
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.legend-chip {
+  display: inline-grid;
+  place-items: center;
+  width: 1.35rem;
+  height: 1.35rem;
+  border-radius: 999px;
+  border: 1px solid #a67c52;
+  background: #f6e7cf;
+  font-weight: 700;
+}
+
+.legend-chip.power {
+  background: #ffd573;
+}
+
+.legend-chip.filler {
+  background: #e6e6e6;
+}
+
 .tutorial {
   border: 2px dashed #e9c46a;
   border-radius: 12px;
@@ -118,6 +152,9 @@ h1 {
 }
 
 .card {
+  position: relative;
+  display: grid;
+  place-items: center;
   aspect-ratio: 1 / 1;
   border: 1px solid #dcae7b;
   border-radius: 10px;
@@ -127,6 +164,25 @@ h1 {
   color: transparent;
   cursor: pointer;
   transition: transform 120ms ease, background-color 120ms ease;
+}
+
+.card-face {
+  pointer-events: none;
+}
+
+.slot-chip {
+  position: absolute;
+  right: 0.35rem;
+  top: 0.35rem;
+  min-width: 1.2rem;
+  height: 1.2rem;
+  padding: 0 0.2rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.88);
+  color: #2a2a2a;
+  font-size: 0.68rem;
+  display: inline-grid;
+  place-items: center;
 }
 
 .card:hover:enabled {
@@ -140,6 +196,10 @@ h1 {
 
 .card.power.face-up {
   background: var(--power);
+}
+
+.card.filler.face-up {
+  background: #d6d6d6;
 }
 
 .card.matched {
