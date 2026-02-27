@@ -31,6 +31,39 @@ export const MODE_CONFIGS = {
   }
 };
 
+const TUTORIAL_STEPS = [
+  {
+    id: 'start',
+    title: 'Step 1: Start Round',
+    body: 'Press Start (or Enter) to begin this round.',
+    check: (state) => state.tutorialFlags.started
+  },
+  {
+    id: 'flip',
+    title: 'Step 2: Flip A Card',
+    body: 'Flip any hidden card to reveal its symbol.',
+    check: (state) => state.tutorialFlags.firstFlip
+  },
+  {
+    id: 'match',
+    title: 'Step 3: Match A Pair',
+    body: 'Match two identical symbols to lock your first pair.',
+    check: (state) => state.tutorialFlags.firstMatch
+  },
+  {
+    id: 'power',
+    title: 'Step 4: Trigger ★',
+    body: 'Reveal the ★ card once to peek a hidden pair.',
+    check: (state) => state.tutorialFlags.powerUsed
+  },
+  {
+    id: 'finish',
+    title: 'Step 5: Clear The Board',
+    body: 'Match all seven pairs to win the round.',
+    check: (state) => state.tutorialFlags.won
+  }
+];
+
 function mulberry32(seed) {
   return function rand() {
     let t = (seed += 0x6d2b79f5);
@@ -99,6 +132,16 @@ export function createGameState(seed = 20260226, modeId = DEFAULT_MODE_ID) {
     paused: false,
     phase: 'start',
     message: 'Press Start or Enter',
+    tutorialVisible: true,
+    tutorialCompleted: false,
+    tutorialStep: 0,
+    tutorialFlags: {
+      started: false,
+      firstFlip: false,
+      firstMatch: false,
+      powerUsed: false,
+      won: false
+    },
     selected: [],
     cursorIndex: 0,
     inputLocked: false,
@@ -110,6 +153,29 @@ export function createGameState(seed = 20260226, modeId = DEFAULT_MODE_ID) {
 
 function addTimer(state, durationMs, callback) {
   state.timers.push({ remaining: durationMs, callback });
+}
+
+function getTutorialStep(state) {
+  return TUTORIAL_STEPS[state.tutorialStep] || null;
+}
+
+function syncTutorialProgress(state) {
+  if (state.tutorialCompleted) {
+    return;
+  }
+
+  while (state.tutorialStep < TUTORIAL_STEPS.length) {
+    const step = TUTORIAL_STEPS[state.tutorialStep];
+    if (!step.check(state)) {
+      break;
+    }
+    state.tutorialStep += 1;
+  }
+
+  if (state.tutorialStep >= TUTORIAL_STEPS.length) {
+    state.tutorialCompleted = true;
+    state.tutorialVisible = false;
+  }
 }
 
 function setCardFace(card, nextFaceUp) {
@@ -157,6 +223,8 @@ function consumePowerReveal(state) {
     }
   });
 
+  state.tutorialFlags.powerUsed = true;
+  syncTutorialProgress(state);
   state.message = `Power reveal: peeked pair ${pair[0].symbol}.`;
 }
 
@@ -175,6 +243,8 @@ function resolvePair(state) {
     b.matched = true;
     state.matchedPairs += 1;
     state.score += 10;
+    state.tutorialFlags.firstMatch = true;
+    syncTutorialProgress(state);
     state.selected = [];
     state.phase = 'waiting_first';
     state.message = `Match: ${a.symbol}`;
@@ -182,6 +252,8 @@ function resolvePair(state) {
     if (state.matchedPairs >= state.totalPairs) {
       state.mode = 'won';
       state.phase = 'won';
+      state.tutorialFlags.won = true;
+      syncTutorialProgress(state);
       state.message = 'All pairs matched. Press R to reset.';
     }
     return;
@@ -212,6 +284,8 @@ function flipCard(state, index) {
   }
 
   card.faceUp = true;
+  state.tutorialFlags.firstFlip = true;
+  syncTutorialProgress(state);
 
   if (card.kind === 'power-reveal') {
     state.score += 2;
@@ -259,6 +333,7 @@ function advanceTimers(state, deltaMs) {
 }
 
 function serializeState(state) {
+  const tutorialStep = getTutorialStep(state);
   const visibleCards = state.deck
     .filter((card) => card.faceUp || card.matched)
     .map((card) => ({
@@ -276,6 +351,9 @@ function serializeState(state) {
     modeId: state.modeId,
     modeLabel: state.modeLabel,
     phase: state.phase,
+    tutorialVisible: state.tutorialVisible,
+    tutorialStep: state.tutorialStep,
+    tutorialStepTitle: tutorialStep ? tutorialStep.title : 'Completed',
     paused: state.paused,
     score: state.score,
     moves: state.moves,
@@ -320,6 +398,7 @@ export function createGame(root) {
         <button id="pause-btn" type="button">Pause (P)</button>
         <button id="reset-btn" type="button">Reset (R)</button>
       </section>
+      <section id="tutorial" class="tutorial" aria-live="polite"></section>
       <section id="board" class="board" aria-label="game board"></section>
       <p id="message" class="message"></p>
       <p class="hint">Keys: P pause, R reset, 1-16 flips slots.</p>
@@ -331,6 +410,7 @@ export function createGame(root) {
   const pairsNode = root.querySelector('#pairs');
   const pairsTotalNode = root.querySelector('#pairs-total');
   const messageNode = root.querySelector('#message');
+  const tutorialNode = root.querySelector('#tutorial');
   const boardNode = root.querySelector('#board');
   const startBtn = root.querySelector('#start-btn');
   const pauseBtn = root.querySelector('#pause-btn');
@@ -343,6 +423,18 @@ export function createGame(root) {
     pairsTotalNode.textContent = String(state.totalPairs);
     messageNode.textContent = state.message;
     pauseBtn.textContent = state.paused ? 'Resume (P)' : 'Pause (P)';
+
+    const tutorialStep = getTutorialStep(state);
+    if (state.tutorialVisible && tutorialStep) {
+      tutorialNode.hidden = false;
+      tutorialNode.innerHTML = `
+        <h2>${tutorialStep.title}</h2>
+        <p>${tutorialStep.body}</p>
+      `;
+    } else {
+      tutorialNode.hidden = true;
+      tutorialNode.innerHTML = '';
+    }
 
     boardNode.innerHTML = '';
     for (let i = 0; i < state.deck.length; i += 1) {
@@ -386,6 +478,8 @@ export function createGame(root) {
     if (state.mode === 'start') {
       state.mode = 'playing';
       state.phase = 'waiting_first';
+      state.tutorialFlags.started = true;
+      syncTutorialProgress(state);
       state.message = 'Find all matching pairs.';
       render();
     }

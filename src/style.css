@@ -64,6 +64,24 @@ h1 {
   cursor: pointer;
 }
 
+.tutorial {
+  border: 2px dashed #e9c46a;
+  border-radius: 12px;
+  padding: 0.7rem 0.8rem;
+  margin-bottom: 0.9rem;
+  background: #fff8ea;
+}
+
+.tutorial h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.tutorial p {
+  margin: 0.35rem 0 0;
+  font-size: 0.92rem;
+}
+
 .board {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
