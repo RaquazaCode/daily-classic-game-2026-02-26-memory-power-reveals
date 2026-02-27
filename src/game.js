@@ -296,6 +296,16 @@ function useHint(state) {
   state.message = `Hint used: revealed pair ${pair[0].symbol} (${suffix}).`;
 }
 
+function getModeStartMessage(state) {
+  if (state.modeId === 'zen') {
+    return 'Zen mode: no miss penalty, unlimited hints.';
+  }
+  if (state.modeId === 'sprint') {
+    return 'Sprint mode: beat the 90s timer with streak scoring.';
+  }
+  return 'Find all matching pairs.';
+}
+
 function resolvePair(state) {
   if (state.selected.length !== 2) {
     return;
@@ -310,8 +320,12 @@ function resolvePair(state) {
     a.matched = true;
     b.matched = true;
     state.matchedPairs += 1;
-    state.streak += 1;
-    state.maxStreak = Math.max(state.maxStreak, state.streak);
+    if (state.modeId === 'sprint') {
+      state.streak += 1;
+      state.maxStreak = Math.max(state.maxStreak, state.streak);
+    } else {
+      state.streak = 0;
+    }
     const matchPoints = state.modeId === 'sprint' ? 10 + (state.streak - 1) * 4 : 10;
     state.score += matchPoints;
     state.tutorialFlags.firstMatch = true;
@@ -334,9 +348,10 @@ function resolvePair(state) {
   state.streak = 0;
   state.inputLocked = true;
   state.phase = 'resolving';
-  state.message = 'Miss: cards will flip back.';
+  state.message = state.modeId === 'zen' ? 'Miss in Zen: no penalty applied.' : 'Miss: cards will flip back.';
 
-  addTimer(state, 700, () => {
+  const resolveDelay = state.modeId === 'zen' ? 420 : 700;
+  addTimer(state, resolveDelay, () => {
     setCardFace(a, false);
     setCardFace(b, false);
     state.selected = [];
@@ -640,7 +655,7 @@ export function createGame(root) {
       state.phase = 'waiting_first';
       state.tutorialFlags.started = true;
       syncTutorialProgress(state);
-      state.message = 'Find all matching pairs.';
+      state.message = getModeStartMessage(state);
       render();
     }
   }
@@ -667,7 +682,7 @@ export function createGame(root) {
     state = resetState(20260226, restartCount, modeId);
     state.mode = 'start';
     state.phase = 'start';
-    state.message = `Mode set to ${state.modeLabel}. Press Start.`;
+    state.message = `Mode set to ${state.modeLabel}. ${getModeStartMessage(state)}`;
     modeSelect.value = state.modeId;
     render();
   }
