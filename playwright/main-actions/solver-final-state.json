@@ -1,1 +1,217 @@
-{"coordinate_system":"origin top-left, col grows right, row grows down","mode":"won","paused":false,"score":72,"moves":7,"matchedPairs":7,"totalPairs":7,"selected":[],"cursorIndex":0,"visibleCards":[{"id":"card-2","kind":"pair","symbol":"D","col":2,"row":0,"matched":true},{"id":"card-3","kind":"pair","symbol":"E","col":3,"row":0,"matched":true},{"id":"card-4","kind":"pair","symbol":"F","col":0,"row":1,"matched":true},{"id":"card-5","kind":"pair","symbol":"B","col":1,"row":1,"matched":true},{"id":"card-6","kind":"pair","symbol":"D","col":2,"row":1,"matched":true},{"id":"card-7","kind":"pair","symbol":"E","col":3,"row":1,"matched":true},{"id":"card-8","kind":"pair","symbol":"C","col":0,"row":2,"matched":true},{"id":"card-9","kind":"pair","symbol":"G","col":1,"row":2,"matched":true},{"id":"card-10","kind":"pair","symbol":"B","col":2,"row":2,"matched":true},{"id":"card-11","kind":"pair","symbol":"A","col":3,"row":2,"matched":true},{"id":"card-12","kind":"pair","symbol":"C","col":0,"row":3,"matched":true},{"id":"card-13","kind":"pair","symbol":"F","col":1,"row":3,"matched":true},{"id":"card-14","kind":"pair","symbol":"G","col":2,"row":3,"matched":true},{"id":"card-15","kind":"pair","symbol":"A","col":3,"row":3,"matched":true}],"hiddenCount":2,"message":"All pairs matched. Press R to reset.","timersPending":0}
+{
+  "classic": {
+    "coordinate_system": "origin top-left, col grows right, row grows down",
+    "mode": "won",
+    "modeId": "classic",
+    "modeLabel": "Classic",
+    "phase": "won",
+    "tutorialVisible": false,
+    "tutorialStep": 5,
+    "tutorialStepTitle": "Completed",
+    "hintsRemaining": 2,
+    "hintActive": false,
+    "sprintTimeRemainingMs": null,
+    "streak": 0,
+    "maxStreak": 0,
+    "controlsLegend": [
+      "Start: Enter or Start button",
+      "Move cursor: Arrow keys",
+      "Flip selected slot: Space or Enter",
+      "Hint: H or Use Hint button",
+      "Pause/Resume: P",
+      "Reset round: R"
+    ],
+    "paused": false,
+    "score": 72,
+    "moves": 7,
+    "matchedPairs": 7,
+    "totalPairs": 7,
+    "selected": [],
+    "cursorIndex": 0,
+    "visibleCards": [
+      {
+        "id": "card-2",
+        "kind": "pair",
+        "symbol": "D",
+        "col": 2,
+        "row": 0,
+        "matched": true
+      },
+      {
+        "id": "card-3",
+        "kind": "pair",
+        "symbol": "E",
+        "col": 3,
+        "row": 0,
+        "matched": true
+      },
+      {
+        "id": "card-4",
+        "kind": "pair",
+        "symbol": "F",
+        "col": 0,
+        "row": 1,
+        "matched": true
+      },
+      {
+        "id": "card-5",
+        "kind": "pair",
+        "symbol": "B",
+        "col": 1,
+        "row": 1,
+        "matched": true
+      },
+      {
+        "id": "card-6",
+        "kind": "pair",
+        "symbol": "D",
+        "col": 2,
+        "row": 1,
+        "matched": true
+      },
+      {
+        "id": "card-7",
+        "kind": "pair",
+        "symbol": "E",
+        "col": 3,
+        "row": 1,
+        "matched": true
+      },
+      {
+        "id": "card-8",
+        "kind": "pair",
+        "symbol": "C",
+        "col": 0,
+        "row": 2,
+        "matched": true
+      },
+      {
+        "id": "card-9",
+        "kind": "pair",
+        "symbol": "G",
+        "col": 1,
+        "row": 2,
+        "matched": true
+      },
+      {
+        "id": "card-10",
+        "kind": "pair",
+        "symbol": "B",
+        "col": 2,
+        "row": 2,
+        "matched": true
+      },
+      {
+        "id": "card-11",
+        "kind": "pair",
+        "symbol": "A",
+        "col": 3,
+        "row": 2,
+        "matched": true
+      },
+      {
+        "id": "card-12",
+        "kind": "pair",
+        "symbol": "C",
+        "col": 0,
+        "row": 3,
+        "matched": true
+      },
+      {
+        "id": "card-13",
+        "kind": "pair",
+        "symbol": "F",
+        "col": 1,
+        "row": 3,
+        "matched": true
+      },
+      {
+        "id": "card-14",
+        "kind": "pair",
+        "symbol": "G",
+        "col": 2,
+        "row": 3,
+        "matched": true
+      },
+      {
+        "id": "card-15",
+        "kind": "pair",
+        "symbol": "A",
+        "col": 3,
+        "row": 3,
+        "matched": true
+      }
+    ],
+    "hiddenCount": 2,
+    "message": "All pairs matched. Press R to reset.",
+    "timersPending": 0
+  },
+  "zen": {
+    "coordinate_system": "origin top-left, col grows right, row grows down",
+    "mode": "playing",
+    "modeId": "zen",
+    "modeLabel": "Zen",
+    "phase": "waiting_first",
+    "tutorialVisible": true,
+    "tutorialStep": 1,
+    "tutorialStepTitle": "Step 2: Flip A Card",
+    "hintsRemaining": null,
+    "hintActive": false,
+    "sprintTimeRemainingMs": null,
+    "streak": 0,
+    "maxStreak": 0,
+    "controlsLegend": [
+      "Start: Enter or Start button",
+      "Move cursor: Arrow keys",
+      "Flip selected slot: Space or Enter",
+      "Hint: H or Use Hint button",
+      "Pause/Resume: P",
+      "Reset round: R"
+    ],
+    "paused": false,
+    "score": 0,
+    "moves": 0,
+    "matchedPairs": 0,
+    "totalPairs": 7,
+    "selected": [],
+    "cursorIndex": 0,
+    "visibleCards": [],
+    "hiddenCount": 16,
+    "message": "Hint used: revealed pair B (unlimited in this mode).",
+    "timersPending": 0
+  },
+  "sprint": {
+    "coordinate_system": "origin top-left, col grows right, row grows down",
+    "mode": "time_up",
+    "modeId": "sprint",
+    "modeLabel": "Sprint",
+    "phase": "time_up",
+    "tutorialVisible": true,
+    "tutorialStep": 1,
+    "tutorialStepTitle": "Step 2: Flip A Card",
+    "hintsRemaining": 2,
+    "hintActive": false,
+    "sprintTimeRemainingMs": 0,
+    "streak": 0,
+    "maxStreak": 0,
+    "controlsLegend": [
+      "Start: Enter or Start button",
+      "Move cursor: Arrow keys",
+      "Flip selected slot: Space or Enter",
+      "Hint: H or Use Hint button",
+      "Pause/Resume: P",
+      "Reset round: R"
+    ],
+    "paused": false,
+    "score": 0,
+    "moves": 0,
+    "matchedPairs": 0,
+    "totalPairs": 7,
+    "selected": [],
+    "cursorIndex": 0,
+    "visibleCards": [],
+    "hiddenCount": 16,
+    "message": "Time up. Final score: 0",
+    "timersPending": 0
+  }
+}

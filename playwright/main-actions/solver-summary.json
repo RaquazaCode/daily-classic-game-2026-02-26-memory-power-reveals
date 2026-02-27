@@ -1,3 +1,7 @@
 {
-  "powerTriggered": true
+  "classicWon": true,
+  "classicPowerTriggered": true,
+  "zenHintNoPenalty": true,
+  "sprintTimedOut": true,
+  "tutorialFieldPresent": true
 }
